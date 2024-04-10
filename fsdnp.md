@@ -75,7 +75,7 @@ This specification defines the following event types:
     phishing-detected": {
       "subject": {
         "format": "iss_sub",
-        "iss": "https://www.westpac.com.au/",
+        "iss": "https://www.wbank.com/",
         "sub": "7375626A656374",
       }
     }
