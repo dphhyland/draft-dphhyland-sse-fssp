@@ -20,7 +20,11 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 financial_account
 
-    OPTIONAL. A subject identifier for the financial account. 
+    OPTIONAL. An identifier for the financial account. This identifier can be in any format, such as IBAN, account number, or other account identifier.
+
+transaction
+
+    OPTIONAL. An identifier for the transaction. This identifier can be in any format, such as transaction ID, reference number, or other transaction identifier.
 
 
 ## 4. Event Types
@@ -86,6 +90,8 @@ Resource Types:
 
 ### 4.2 Failed Multi-Factor Authentication Attempts 
 
+Event raised when a user account has failed multiple MFA attempts. 
+
 
 
 ### 4.3 Phishing Attempts Detected**
@@ -141,33 +147,7 @@ Event type raised high risk transactions are performed on a financial account.
 ```
 
 
-## 4.5 Account Changes -> Same as Identifer change?
-
-
-
-
-
-``` json
-
-   {
-     "iss": "https://idp.example.com/3456790/",
-     "jti": "756E69717565206964656E746966696572",
-     "iat": 1508184845,
-     "aud": "https://sp.example2.net/caep",
-     "events": {
-       "https://schemas.openid.net/secevent/fsdnp/event-type/unsual-activities": {
-         "financial_account": {
-           "format": "iban",
-           "IBAN": "DE89370400440532013000"
-         },
-       }
-     }
-   }
-```
-
-
-## 4.6 Other TBD
-
+## 4.5 Other TBD
 
 - Card Not Present (CNP) Fraud Alerts
 - Suspicious Money Transfers
