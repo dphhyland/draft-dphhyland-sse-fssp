@@ -18,29 +18,17 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## 3. Complex Subject Members
 
-financial-account
+**financial-account**:  An identifier for the financial account. This identifier can be in any format, such as BSB, account number, IBAN or other account identifier.
 
-    An identifier for the financial account. This identifier can be in any format, such as BSB, account number, IBAN or other account identifier.
+**transaction**:  An identifier for the transaction. This identifier can be in any format, such as transaction ID, reference number, or other transaction identifier.
 
-transaction
+**mobile-phone**:  An identifier for the mobile phone number. This identifier can be in any format, such as E.164, national or other phone number format.
 
-    An identifier for the transaction. This identifier can be in any format, such as transaction ID, reference number, or other transaction identifier.
+**domain-name**: An identifier for the domain name. This identifier can be in any format, such as a fully qualified domain name (FQDN) or other domain name format.
 
-mobile-phone
+ b: An identifier for the website. This identifier can be in any format, such as a URL or other website format.
 
-    An identifier for the mobile phone number. This identifier can be in any format, such as E.164, national or other phone number format.
-
-domain-name
-
-    An identifier for the domain name. This identifier can be in any format, such as a fully qualified domain name (FQDN) or other domain name format.
-
-website
-
-    An identifier for the website. This identifier can be in any format, such as a URL or other website format.
-
-email-address
-
-    An identifier for the email address. This identifier can be in any format, such as an email address or other email address format.
+**email-address**: An identifier for the email address. This identifier can be in any format, such as an email address or other email address format.
 
 ## 3. Consideration of Privacy and AML/CFT Regulations
 
@@ -182,8 +170,8 @@ An email address trust score provides information on the trustworthiness of an e
 - If the email address has been reported as a phishing email address. If yes 0.0, if no 1.0.
 - If the email address has been reported as a scam email address. If yes 0.0, if no 1.0.
 - If the email address belongs to a domain that has been reported as high risk. If yes 0.0, if no 1.0.
-
-  ``` json
+  
+``` json
   
     {
       "iss": "https://idp.example.com/3456790/",
@@ -327,7 +315,7 @@ Resource Types:
        }
      }
    }
-
+```
 
 ### 4.2.4 Email Address Fraud Detected
 
