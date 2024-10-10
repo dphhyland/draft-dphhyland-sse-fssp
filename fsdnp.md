@@ -18,25 +18,249 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## 3. Complex Subject Members
 
-financial_account
+financial-account
 
-    OPTIONAL. An identifier for the financial account. This identifier can be in any format, such as IBAN, account number, or other account identifier.
+    An identifier for the financial account. This identifier can be in any format, such as BSB, account number, IBAN or other account identifier.
 
 transaction
 
-    OPTIONAL. An identifier for the transaction. This identifier can be in any format, such as transaction ID, reference number, or other transaction identifier.
+    An identifier for the transaction. This identifier can be in any format, such as transaction ID, reference number, or other transaction identifier.
+
+mobile-phone
+
+    An identifier for the mobile phone number. This identifier can be in any format, such as E.164, national or other phone number format.
+
+domain-name
+
+    An identifier for the domain name. This identifier can be in any format, such as a fully qualified domain name (FQDN) or other domain name format.
+
+website
+
+    An identifier for the website. This identifier can be in any format, such as a URL or other website format.
+
+email-address
+
+    An identifier for the email address. This identifier can be in any format, such as an email address or other email address format.
+
+## 3. Consideration of Privacy and AML/CFT Regulations
+
+Participants in the FSDNP SHALL comply with all applicable data protection and privacy laws, including the General Data Protection Regulation (GDPR) and the Anti-Money Laundering and Countering the of the jurisdiction in which they operate.
+
+Participants SHALL ensure that the exchange of FSEMs does not violate any data protection or privacy laws, and that the information shared is limited to what is necessary for the detection and prevention of fraud and scams.
 
 
 ## 4. Event Types
 
 FSDNP is designed to facilitate the exchange of standardized event messages related to potential or detected fraud and scams among participants, enabling rapid and coordinated response mechanisms.
 
-The bade uri for the FSDNP is https://schemas.openid.net/secevent/fsdnp/event-type.
+The events support changes in subject state, related to a fraud attribute of the subject or a change in the trust score for the subject.
 
-This specification defines the following event types:
+The uri for the FSDNP is https://schemas.openid.net/secevent/fsdnp/event-type.
+
+### 4.1 Trust Scores
+
+Trust scores provide information on the trustworthiness of a subject, and is derived through a standardised scoring mechanism. Trust scores are used to assess the risk associated with a subject, such as a bank account, mobile phone number, email address, domain or website. 
+
+This standard does not suggest thresholds for trust scores, as these are determined by the relying party based on their risk appetite and fraud management policies.
+
+A Trust score of 1.0 will signal that all attributes of the trust score measure have been met, while a trust score of 0 will signal that one or more attributes that indicate fraud are present.
 
 
-### 4.1 Unusual Account Activities
+#### 4.1.1 Bank Account Details Check
+
+The Bank Account details check event occurs when a bank account's name details change. 
+This event accompanies the trust score for the bank account, which provides a measure of accuracy of the BSB, account number and the name of the account holder.
+This check may be performed by a relying party to verify if the details they have been provided are accurate.
+The check is a measure of the assurance of BSB Account Number Pair, and a closeness of the name to the account holder.
+
+``` json
+
+   {
+     "iss": "https://idp.example.com/3456790/",
+     "jti": "756E69717565206964656E746966696572",
+     "iat": 1508184845,
+     "aud": "https://sp.example2.net",
+     "events": {
+       "https://schemas.openid.net/secevent/fsdnp/event-type/bank-account-details-check": {
+         "financial_account": {
+           "bsb": "830123",
+           "account": "DE89370400440532013000",
+           "name": "John Doe"
+         },
+         "match-score": 0.8
+       }
+     }
+   }
+
+```
+
+A match score of 1.0 indicates a perfect match across all attributes, while a score of 0.0 indicates no match. 
+If there is no match on identifier values (such as BSB account number, IBAN) a match score of 0 will result. The match score is a measure of accuracy of any name details provided with the account details.
+
+#### 4.1.2 Bank Account Trust Score
+
+The bank account trust score provides information on the trustworthiness of a bank account. This measure is based upon the following characteristics:
+- How long the account has been open. Over 12 months 1.0, 6-12 months 0.8, 3-6 months 0.6, 1-3 months 0.4, less than 1 month 0.2.
+- The how recently any account details have been changed, such as account name, account holders. Within 24 hours 1.0, 24-48 hours 0.8, 48-72 hours 0.6, 72-96 hours 0.4, 96-120 hours 0.2.
+- How recently the contact details for the account holder have changed. Within 24 hours 0.0, 24-48 hours 0.2, 48-72 hours 0.4, 72-96 hours 0.5, 1 week 0.8.
+- If the account is actively being used. This is product dependant and will be at the discretion of the financial institution.
+- Fraud has been detected on the account. If yes the trust score returned will be 0.0, if no 1.0.
+- The account has been blocked by the bank. If yes the trust score returned will be 0.0, if no 1.0.
+
+The bank account trust score will not reflect any signals relating to a Suspicious Activity Report (SAR) which would lead to any form of tipping off. 
+
+Calculation of the trust score: TBD
+
+A trust score of 1.0 signal that all attributes have not indicate any fraud, while a trust score of 0 will signal that one or more attributes that indicate fraud are present.
+
+If fraud has been reported on the account it will be provided as a boolean value with the trust score.
+
+**Weighting**
+The weighting of the trust score is as follows:
+
+
+
+``` json
+
+   {
+     "iss": "https://idp.example.com/3456790/",
+     "jti": "756E69717565206964656E746966696572",
+     "iat": 1508184845,
+     "aud": "https://sp.example2.net",
+     "events": {
+       "https://schemas.openid.net/secevent/fsdnp/event-type/bank-account-trust-score": {
+         "financial_account": {
+           "bsb": "830123",
+           "account": "DE89370400440532013000",
+           "name": "John Doe"
+         },
+         "trust_score": 0.8,
+         "fraud_detected": false
+       }
+     }
+   }
+
+```
+
+#### 4.1.3 Mobile Phone Number Trust Score
+
+A mobile phone number trust score provides information on the trustworthiness of a mobile phone number. This measure is based upon the following characteristics:
+- How long the phone number has been active. Weighting: 0.5 - Over 12 months 1.0, 6-12 months 0.8, 3-6 months 0.6, 1-3 months 0.4, less than 1 month 0.2.
+- If the phone number has been recently ported. Weighting: 0.2 - Within 24 hours 0.2, 24-48 hours 0.4, 48-72 hours 0.6, 72-96 hours 0.8, 96-120 hours 1.0.
+- If the phone number has recently had a sim Swap. Weighting: 1.0 -  Within 24 hours 0.2, 24-48 hours 0.4, 48-72 hours 0.6, 72-96 hours 0.8, 96-120 hours 1.0.
+- If the phone number has been recently used in a fraud attempt or fraud has been detected or reported. Weighting 1.0 - If yes 0.0, if no 1.0.
+
+The trust score will not reflect any signals relating to a Suspicious Activity Report (SAR) which would lead to any form of tipping off.
+
+Sim Swap and the detection of fraud will be provided as a boolean value with the trust score.
+
+``` json
+
+   {
+     "iss": "https://idp.example.com/3456790/",
+     "jti": "756E69717565206964656E746966696572",
+     "iat": 1508184845,
+     "aud": "https://sp.example2.net",
+     "events": {
+       "https://schemas.openid.net/secevent/fsdnp/event-type/mobile-phone-number-trust-score": {
+         "phone_number": "+1234567890",
+         "trust_score": 0.8,
+         "sim_swap_detected": false,
+          "fraud_detected": false
+       }
+     }
+   }
+
+``` 
+
+#### 4.1.4 Email Address Trust Score 
+  
+An email address trust score provides information on the trustworthiness of an email address. This measure is based upon the following characteristics:
+- How long the email address has been active.
+- If the email address has been recently used in a fraud attempt or fraud has been detected or reported. If yes 0.0, if no 1.0.
+- If the email address has been reported as spam. If yes 0.0, if no 1.0.
+- If the email address has been reported as a phishing email address. If yes 0.0, if no 1.0.
+- If the email address has been reported as a scam email address. If yes 0.0, if no 1.0.
+- If the email address belongs to a domain that has been reported as high risk. If yes 0.0, if no 1.0.
+
+  ``` json
+  
+    {
+      "iss": "https://idp.example.com/3456790/",
+      "jti": "756E69717565206964656E746966696572",
+      "iat": 1508184845,
+      "aud": "https://sp.example2.net",
+      "events": {
+        "https://schemas.openid.net/secevent/fsdnp/event-type/email-address-trust-score": {
+          "email": "",  
+          "trust_score": 0.8,
+          "fraud_detected": false
+        } 
+
+      }
+    }
+
+  ```
+
+#### 4.1.5 Domain Trust Score
+
+A domain trust score provides information on the trustworthiness of a domain. This measure is based upon the following characteristics:
+- How long the domain has been active.
+- If the domain has been recently used in a fraud attempt or fraud has been detected or reported.
+- If the domain has been used in a phishing attempt.
+- If the domain comes from a high risk country.
+
+``` json
+
+   {
+     "iss": "https://idp.example.com/3456790/",
+     "jti": "756E69717565206964656E746966696572",
+     "iat": 1508184845,
+     "aud": "https://sp.example2.net",
+     "events": {
+       "https://schemas.openid.net/secevent/fsdnp/event-type/domain-trust-score": {
+         "domain": "example.com",
+         "trust_score": 0.8
+       }
+     }
+   }
+
+```
+
+#### 4.1.6 Web Site Trust Score
+
+A web site trust score provides information on the trustworthiness of a web site. This measure is based upon the following characteristics:
+- How long the web site has been active.
+- If the web site has been recently used in a fraud attempt or fraud has been detected or reported.
+- If the web site has been used in a phishing attempt.
+- If the web site comes from a high risk country.
+
+``` json
+
+   {
+     "iss": "https://idp.example.com/3456790/",
+     "jti": "756E69717565206964656E746966696572",
+     "iat": 1508184845,
+     "aud": "https://sp.example2.net",
+     "events": {
+       "https://schemas.openid.net/secevent/fsdnp/event-type/web-site-trust-score": {
+         "url": "https://example.com",
+         "trust_score": 0.8
+       }
+     }
+   }
+
+``` 
+
+### 4.2 Fraud and Scam Signals
+
+
+This specification defines the following event types that may be used to signal to subscribers that a fraud or scam event has been detected, or a significant change in the trust score of a subject has occurred.
+
+
+#### 4.2.1 Bank Account Fraud Detected
+
+Event type for fraud detected on a financial account, transaction, subject or other resource.
 
 ``` json
 
@@ -48,8 +272,9 @@ This specification defines the following event types:
      "events": {
        "https://schemas.openid.net/secevent/fsdnp/event-type/unsual-activities": {
          "financial_account": {
-           "format": "iban",
-           "IBAN": "DE89370400440532013000"
+           "bsb": "830123",
+           "account": "DE89370400440532013000",
+           "name": "John Doe"
          },
        }
      }
@@ -57,7 +282,7 @@ This specification defines the following event types:
 
 ```
 
-### 4.1 Fraud Detected 
+### 4.2.2 Mobile Phone Number Fraud Detected 
 
 Event type for fraud detected on a financial account, transaction, subject or other resource.
 
@@ -74,10 +299,9 @@ Resource Types:
      "aud": "https://sp.example2.net",
      "events": {
        "https://schemas.openid.net/secevent/fsdnp/event-type/fraud-detected": {
-         "transaction": {
-           "format": "id-tran",  // 
-           "iss": "https://www.wbank.com/",
-           "tx": "DE89370400440532013000"
+         "mobile-phone": {
+           "number": "+61456234545"
+
          },
        }
      }
@@ -85,16 +309,34 @@ Resource Types:
 
 ```
 
-- New Device Registration -> Device compliance change. 
+### 4.2.3 Mobile Phone SIM Swap Detected
+
+``` json
+
+   {
+     "iss": "https://idp.example.com/3456790/",
+     "jti": "756E69717565206964656E746966696572",
+     "iat": 1508184845,
+     "aud": "https://sp.example2.net",
+     "events": {
+       "https://schemas.openid.net/secevent/fsdnp/event-type/fraud-detected": {
+         "mobile-phone": {
+           "number": "+61456234545"
+
+         },
+       }
+     }
+   }
 
 
-### 4.2 Failed Multi-Factor Authentication Attempts 
+### 4.2.4 Email Address Fraud Detected
 
-Event raised when a user account has failed multiple MFA attempts. 
+### 4.2.5 Website Phising Detected
+
+### 4.2.6 Domain Phising Detected
 
 
-
-### 4.3 Phishing Attempts Detected**
+### 4.2.7 Phishing Attempts Detected
 
 Event raised when a party attempts a phishing attack on a user account.
 sub in this case would be a PPID known by the RP as defined with OIDC ... (enter PPID reference here)
@@ -147,20 +389,13 @@ Event type raised high risk transactions are performed on a financial account.
 ```
 
 
-## 4.5 Other TBD
-
-- Card Not Present (CNP) Fraud Alerts
-- Suspicious Money Transfers
-- Identity Verification Failures
-- SIM Swap Alerts
-- Regulatory Watchlist Hits
 
 
-### 4 Data Protection and Privacy
+### 5 Data Protection and Privacy
 
 Participants MUST ensure that all FSEMs comply with applicable data protection and privacy laws. Measures such as pseudonymization of customer identifiers and encryption of event messages SHALL be implemented.
 
-## 5. Operational Requirements
+## 6. Operational Requirements
 
 Participants in the FSDNP SHALL:
 - Establish secure communication channels for the exchange of FSEMs.
